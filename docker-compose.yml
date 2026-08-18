@@ -1,0 +1,20 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: sapcas-postgres
+    environment:
+      POSTGRES_DB: sapcas
+      POSTGRES_USER: sapcas
+      POSTGRES_PASSWORD: sapcas
+    ports:
+      - "5432:5432"
+    volumes:
+      - sapcas_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sapcas -d sapcas"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  sapcas_postgres_data:
