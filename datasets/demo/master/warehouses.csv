@@ -1,0 +1,4 @@
+﻿warehouse_id,plant_id,warehouse_type,warehouse_name
+WH-RAW,PLT-SEV-01,RAW_MATERIAL,Almacén Materias Primas
+WH-COMP,PLT-SEV-01,COMPONENTS,Almacén Componentes
+WH-CONS,PLT-SEV-01,CONSUMABLES,Almacén Consumibles

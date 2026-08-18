@@ -1,0 +1,13 @@
+﻿supplier_id,supplier_code,supplier_name,country,currency,payment_terms_days,reliability_score,quality_score,active
+SUP-001,V0001,Metales Sevilla S.L.,ES,EUR,30,0.97,0.98,True
+SUP-002,V0002,Aceros del Sur Industrial S.A.,ES,EUR,45,0.95,0.96,True
+SUP-003,V0003,Lusometal Components Lda.,PT,EUR,60,0.9,0.94,True
+SUP-004,V0004,Iberian Aerospace Fasteners S.L.,ES,EUR,30,0.98,0.99,True
+SUP-005,V0005,EuroAlloys France SAS,FR,EUR,45,0.94,0.98,True
+SUP-006,V0006,MecSupply Andalucía S.L.,ES,EUR,30,0.88,0.93,True
+SUP-007,V0007,CNC Tools Iberia S.L.,ES,EUR,30,0.96,0.97,True
+SUP-008,V0008,Química Técnica Sur S.L.,ES,EUR,45,0.93,0.95,True
+SUP-009,V0009,Rodamientos Hispalis S.L.,ES,EUR,30,0.97,0.98,True
+SUP-010,V0010,Industrial Plastics Iberia S.L.,ES,EUR,45,0.92,0.96,True
+SUP-011,V0011,Packaging Sevilla S.L.,ES,EUR,30,0.98,0.97,True
+SUP-012,V0012,Global Metals Trading GmbH,DE,EUR,60,0.84,0.95,True
