@@ -1,30 +1,12 @@
 # SAPCAS Industrial AI
 
-**SAPCAS Industrial AI ayuda a empresas industriales a reducir costes de compra e inventario mediante agentes conectados a sus datos operativos.**
+SAPCAS Industrial AI es un MVP B2B para empresas industriales. Convierte datos de materiales, inventario, compras y proveedores en indicadores, reglas y, progresivamente, recomendaciones para reducir costes y mejorar decisiones.
 
-## MVP
+**Estado actual:** base de datos, carga demo y API de consulta implementadas. Las reglas de Intelligence y las recomendaciones aún no lo están.
 
-- Inventory Intelligence
-- RFQ Intelligence
-- Procurement Intelligence
+## Inicio rápido
 
-## Stack inicial
-
-- Python
-- FastAPI
-- PostgreSQL
-- SQLAlchemy
-- Alembic
-- Pydantic
-- Pandas
-- pytest
-- Docker
-
-> Alcance deliberadamente reducido para la v0.1: sin Redis, Kubernetes, Terraform ni LangChain.
-
-## Ejecución local
-
-### 1. Crear entorno virtual
+Requisitos: Python y Docker/Docker Compose.
 
 ```bash
 python -m venv .venv
@@ -42,68 +24,33 @@ Linux/macOS:
 source .venv/bin/activate
 ```
 
-### 2. Instalar dependencias
-
 ```bash
 pip install -r requirements.txt
-```
-
-### 3. Variables de entorno
-
-Copia `.env.example` como `.env`.
-
-### 4. Levantar PostgreSQL
-
-```bash
 docker compose up -d db
-```
-
-### 5. Ejecutar API
-
-```bash
+alembic upgrade head
+python scripts/load_demo_data.py
 uvicorn app.main:app --reload
 ```
 
-### 6. Comprobar healthcheck
+La URL por defecto es `postgresql+psycopg://sapcas:sapcas@localhost:5432/sapcas`, coherente con `docker-compose.yml`. Puede sobrescribirse con `DATABASE_URL` en `.env`; hoy no existe `.env.example`.
 
-```http
-GET http://localhost:8000/health
-```
+Swagger: `http://localhost:8000/docs`. Healthcheck: `GET /health` devuelve `{"status": "healthy"}`.
 
-Respuesta:
+## Endpoints disponibles
 
-```json
-{
-  "status": "healthy"
-}
-```
+| Método | Ruta | Función |
+| --- | --- | --- |
+| GET | `/health` | Healthcheck |
+| GET | `/api/v1/` | Metadatos de API |
+| GET | `/api/v1/materials` | Materiales |
+| GET | `/api/v1/suppliers` | Proveedores |
+| GET | `/api/v1/inventory` | Stock por ubicación |
+| GET | `/api/v1/purchases` | Líneas de pedido |
 
-Swagger:
+Son endpoints de lectura; no calculan aún riesgos, KPIs ni recomendaciones.
 
-```text
-http://localhost:8000/docs
-```
+## Stack y lectura recomendada
 
-## Estructura
+Python, FastAPI, PostgreSQL, SQLAlchemy, Alembic, Pydantic, Pandas, pytest y Docker Compose. El MVP evita Redis, Kafka, Kubernetes, Terraform, LangChain y arquitectura distribuida.
 
-```text
-app/
-├── api/
-├── core/
-├── models/
-├── schemas/
-├── services/
-├── agents/
-├── importers/
-└── context/
-
-datasets/demo/
-scripts/
-tests/
-docs/
-alembic/
-```
-
-## Objetivo del primer ciclo
-
-Convertir datos de inventario, compras y proveedores en decisiones económicas medibles antes de introducir capas avanzadas de IA.
+Empieza por [contexto](docs/00_PROJECT_CONTEXT.md), sigue con [arquitectura](docs/01_ARCHITECTURE.md), [modelo](docs/02_DATA_MODEL.md) y [dataset](docs/03_DATASET.md). Consulta después [reglas](docs/04_BUSINESS_RULES.md), [alcance](docs/05_MVP_SCOPE.md), [roadmap](docs/06_ROADMAP.md) y [decisiones](docs/07_DECISIONS.md).
