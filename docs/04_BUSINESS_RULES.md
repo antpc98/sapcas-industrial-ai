@@ -1,38 +1,39 @@
-# Reglas de negocio — documento vivo
+# MVP Business Rules
 
-Este documento delimita lo que debe formalizarse; no define umbrales, fórmulas finales ni comportamiento implementado.
+This document defines MVP semantics; it does not claim production implementation. Every date-sensitive calculation takes an explicit `reference_date` (demo examples: 2026-09-03). Evidence for all rules is **SAPCAS Synthetic Demo**: it validates traceability and behaviour, not industrial calibration. Maturity is Rule Definition → Synthetic Demo → Public Dataset → Pilot → Customer Data → Calibrated Production.
 
-## Inventory Intelligence
+Common conventions: amounts reconcile within `0.011` because CSV values are rounded to two decimals; all current purchase data is EUR, so comparisons across currencies need an FX policy. `source_*` is supplied by the dataset and `calculated_*` is derived by SAPCAS. READY means deterministic CSV inputs exist, not that an API/UI exists.
 
-Objetivo: identificar faltantes, exceso y capital inmovilizado por material/ubicación.
+## Inventory
 
-- `available_stock`: validar relación entre físico, reservado y disponible.
-- `days_of_inventory`: definir cobertura y casos de consumo cero.
-- Riesgo de rotura: horizonte, stock de seguridad, criticidad y lead time.
-- Sobrestock/slow moving: períodos, exclusiones y materiales sin consumo.
-- Valor y capital excedente: coste, moneda y cálculo de exceso.
+| ID / name | Business question; user; current problem | Inputs (dataset / table / columns) and formula | Edges and configuration | Interpretation, action, demo and limitations | Status |
+| --- | --- | --- | --- | --- | --- |
+| INV-001 Available Stock | How much is usable? Inventory planner; supplied availability may be inconsistent. | `inventory.csv` / `inventory_items`: on-hand, reserved, available. `max(on_hand-reserved,0)`. | Negative/null source quantities invalid; supplied available is a reconciliation control, tolerance 0.011. Derived. | Usable quantity for planning; investigate failed reconciliation. MAT-001: max(316.69-28.68,0)=288.01, reported 288.00. Location level only. | READY |
+| INV-002 Days of Inventory | How many consumption days remain? Planner; coverage is otherwise manual. | `inventory.csv` / `inventory_items`: available stock, average daily consumption. `available/consumption`. | Consumption <=0 → NULL and `NO_CONSUMPTION`, never infinity. Derived. | Plan replenishment; no consumption merits review, not an obsolescence claim. MAT-001: 288.01/4.47=64.43 days. Consumption is a demo aggregate, not a forecast. | READY |
+| INV-003 Stockout Risk | Could stock run out before replenishment? Planner. | `inventory.csv`; optionally `supplier_materials.csv`: available, safety, coverage, lead time. HIGH if available<=safety or coverage<=lead time. `(available-safety)/consumption` yields days-to-safety. | No-consumption gives null days-to-safety; eligible supplier must be explicit when lead times differ. Fine LOW/MEDIUM calibration pending. | Expedite/replenish/review reservation. MAT-002: 47.35 available <=86.93 safety, HIGH. Lead-time data is not PostgreSQL-loaded. | PARTIAL |
+| INV-004 Overstock | Is coverage above target? Planner/finance. | `inventory.csv`: availability, consumption. `target=consumption*target_inventory_days`; `excess=max(available-target,0)`. | `target_inventory_days` configurable; 60 is lab/demo initial value, not universal. No consumption is separate signal. | Review policy/purchasing. MAT-001 at 60d: target 268.20; excess 19.81. No criticality/lead-time policy segmentation. | READY |
+| INV-005 Slow Moving | What has not moved? Inventory manager. | `inventory.csv`: last movement, consumption. `reference_date-last_movement`; >90 slow, >180 severe. | Missing/future date invalid; thresholds configurable lab defaults. No consumption is not proof. | Review use, disposition and procurement block. MAT-001: 42 days, not slow. Only last movement snapshot exists. | READY |
+| INV-006 Inventory Value | What available economic value is held? Finance/inventory manager. | `inventory.csv`: available stock, average unit cost. `available*cost`. | Negative inputs invalid; derived. | Indicative value for working-capital review. MAT-001: 288.01*8.39≈€2,416.40. Not accounting valuation or FX converted. | READY |
+| INV-007 Excess Inventory Capital | What capital may be immobilised? Finance. | INV-004 excess and `average_unit_cost`. `excess*cost`. | Inherits configurable target/no-consumption handling. | Prioritise review, not a claim of recoverable savings. MAT-001: 19.81*8.39≈€166.20. Target is uncalibrated. | READY |
 
-**TODO / TO BE DEFINED:** umbrales, alertas, redondeos, datos incompletos y validación contra escenarios demo.
+## Procurement
 
-## Procurement Intelligence
+| ID / name | Business question; user; current problem | Inputs (dataset / table / columns) and formula | Edges and configuration | Interpretation, action, demo and limitations | Status |
+| --- | --- | --- | --- | --- | --- |
+| PROC-001 Historical Average Price | What has this supplier charged for this material? Buyer. | `purchase_orders.csv` / `purchases`: supplier, material, unit price, order date, status. AVG(unit_price) for material+supplier in lookback. | No history → NULL; MVP qualifying status is RECEIVED. `lookback_days` configurable, demo 365. | Baseline for price review. Reproducible from 255 received lines ending 2026-09-03. EUR only, no quantity weighting/FX. | READY |
+| PROC-002 Price Variation | Is current price different from history? Buyer. | Current purchase and PROC-001. `(current-average)/average*100`. | Missing/zero baseline → NULL with reason; no alert threshold yet. | Review quote/order, not automatic rejection. Needs explicit current-line and minimum-history policy. | PARTIAL |
+| PROC-003 Effective Unit Cost | What did each unit cost including transport? Buyer. | `purchase_orders.csv` / `purchases`: quantity, unit price, transport. `(quantity*price+transport)/quantity`. | Quantity >0, transport >=0; derived. | Compare suppliers on cost, not price alone. PO-01000/2≈€13.23. Taxes/duties absent. | READY |
+| PROC-004 On-Time Delivery Rate | Does supplier deliver on promise? Buyer/supplier manager. | `purchase_orders.csv` / `purchases`: supplier, expected/actual date, status. on-time iff actual<=expected; on-time received / received with actual *100. | OPEN excluded; zero denominator → NULL; no grace period. | Delivery follow-up and input to SUP-001. 255 received have dates; 5 OPEN excluded. Line-level, not quantity weighted. | READY |
 
-Objetivo: detectar precio desfavorable y medir coste de compra.
+## Supplier
 
-- Histórico y variación: ventana, comparador, moneda y cantidades.
-- Coste efectivo: tratamiento de transporte y componentes adicionales.
-- KPIs: agregación por empresa, planta, material o proveedor.
-- Cumplimiento: fecha de referencia y pedidos abiertos/sin entrega real.
+| ID / name | Business question; user; current problem | Inputs (dataset / table / columns) and formula | Edges and configuration | Interpretation, action, demo and limitations | Status |
+| --- | --- | --- | --- | --- | --- |
+| SUP-001 Delivery Score | How reliable is delivery? Supplier manager. | PROC-004 by supplier. Initial score = on-time rate. | No denominator → NULL; derived. | Identify delivery follow-up. Delay magnitude is deliberately future scope. | READY |
+| SUP-002 Quality | What quality evidence exists? Supplier manager. | `suppliers.csv` / `suppliers.quality_score` as `source_quality_score`; `goods_receipts.csv`: accepted, received. `calculated_acceptance_rate=accepted/received*100`. | Zero received → NULL; receipt reconciliation tolerance 0.011. | Keep source and calculated evidence distinct. All 255 receipt rows link to PO lines. Receipts are not loaded/modelled; source provenance unspecified. | PARTIAL |
+| SUP-003 Reliability | What reliability signal does source provide? Supplier manager. | `suppliers.csv` / `suppliers.reliability_score` as `source_reliability_score`; no SAPCAS formula. | Missing = unknown. | Context only, not calculated intelligence. SUP-001 source score 0.97. Behavioural derivation is future scope. | READY |
+| SUP-004 Supplier Recommendation | Which eligible supplier should buyer consider? Buyer. | `suppliers.csv`, `materials.csv`, `supplier_materials.csv`, procurement/receipt metrics. Eligibility: active, relation valid at reference date, MOQ compatible, certificate available if material requires it. Conceptual rank `.35 price + .30 delivery + .20 quality + .15 reliability`. | Unknown eligibility must be reported/excluded. Weights configurable MVP initial values; common rigorous score normalisation is missing. | Show eligibility and evidence reasons before recommendation. 71 relations; all 260 PO pairs match. Relation/receipts not PostgreSQL-loaded; MOQ demand basis, certification semantics and normalisation remain. | PARTIAL |
 
-**TODO / TO BE DEFINED:** fórmulas, tolerancias, normalización monetaria y mínimo de datos.
+## External-dataset boundary
 
-## Supplier Intelligence
-
-Objetivo: evaluar proveedor-material para apoyar compra o RFQ.
-
-- Delivery performance desde fechas esperada/real.
-- Calidad desde cantidades aceptadas/rechazadas.
-- Elegibilidad/ranking: pesos, exclusiones, certificación, lead time, MOQ, precio y preferencia.
-
-**TODO / TO BE DEFINED:** escalas, pesos, desempates, caducidad y explicabilidad.
-
-Las reglas objetivas deben calcularse con datos, SQL y Python. Una capa de lenguaje futura explicará resultados, no los sustituirá.
+No external dataset is integrated. Planned research boundaries: SAPCAS Demo → MVP Inventory/Procurement/Supplier; LAB01 → NASA C-MAPSS → maintenance/degradation/RUL; LAB02 → Cognite Open Industrial Data → operational context/asset intelligence/incident investigation. Other datasets are future candidates only.
