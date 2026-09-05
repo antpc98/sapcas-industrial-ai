@@ -53,4 +53,4 @@ Son endpoints de lectura; no calculan aún riesgos, KPIs ni recomendaciones.
 
 Python, FastAPI, PostgreSQL, SQLAlchemy, Alembic, Pydantic, Pandas, pytest y Docker Compose. El MVP evita Redis, Kafka, Kubernetes, Terraform, LangChain y arquitectura distribuida.
 
-Empieza por [contexto](docs/00_PROJECT_CONTEXT.md), sigue con [arquitectura](docs/01_ARCHITECTURE.md), [modelo](docs/02_DATA_MODEL.md) y [dataset](docs/03_DATASET.md). Consulta después [reglas](docs/04_BUSINESS_RULES.md), [alcance](docs/05_MVP_SCOPE.md), [roadmap](docs/06_ROADMAP.md) y [decisiones](docs/07_DECISIONS.md).
+Empieza por [contexto](docs/00_PROJECT_CONTEXT.md), sigue con [arquitectura](docs/01_ARCHITECTURE.md), [modelo](docs/02_DATA_MODEL.md) y [dataset](docs/03_DATASET.md). Consulta después [reglas](docs/04_BUSINESS_RULES.md), [alcance](docs/05_MVP_SCOPE.md), [roadmap](docs/06_ROADMAP.md), [decisiones](docs/07_DECISIONS.md) y [laboratorios futuros](docs/08_LABS.md).

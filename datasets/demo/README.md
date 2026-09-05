@@ -9,7 +9,7 @@ Dataset sintético para el desarrollo inicial de SAPCAS Industrial AI.
 - Materials: 35
 - Suppliers: 12
 - Supplier-material relationships: 71
-- Inventory rows: 35
+- Filas de inventario: 35
 - Purchase requisitions: 31
 - Purchase order lines: 260
 - Goods receipts: 255

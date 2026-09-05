@@ -1,6 +1,6 @@
 # Data Dictionary v0.1
 
-## Master
+## Datos maestros
 
 ### companies.csv
 - `company_id`: identificador interno.
@@ -32,7 +32,7 @@ Maestro de proveedores con términos básicos y scores demo.
 Relación proveedor-material.
 Contiene precio actual, MOQ, cantidad estándar, lead time y disponibilidad de certificado.
 
-## Transactions
+## Transacciones
 
 ### inventory.csv
 Stock por planta, almacén y material.

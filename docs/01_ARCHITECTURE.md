@@ -11,7 +11,7 @@ CSV demo → Pandas + validación mínima → SQLAlchemy → PostgreSQL ← Fast
 Los servicios Intelligence son futuros:
 
 ```text
-PostgreSQL → servicios/reglas Intelligence (planificado) → KPIs/riesgos/recomendaciones (planificado)
+PostgreSQL/CSV demo → servicios/reglas Supply Chain Intelligence (planificado) → KPIs/riesgos/recomendaciones explicables (planificado)
 ```
 
 | Ubicación | Responsabilidad actual |
@@ -26,3 +26,5 @@ PostgreSQL → servicios/reglas Intelligence (planificado) → KPIs/riesgos/reco
 | `tests/` | Healthcheck y validador de columnas. |
 
 La API consulta directamente mediante SQLAlchemy, sin capa de servicio intermedia. `plant_id` y `warehouse_id` no tienen modelo ni FK. Company está cargada y persistida, pero no tiene schema ni endpoint.
+
+La evolución conceptual del producto no implica estructura de código actual: Supply Chain (Inventory, Procurement, Supplier, RFQ), Maintenance, Production, Operational, Quality/Scrap, Cost & Loss y Decision Intelligence transversal. Los laboratorios externos están documentados en [08_LABS.md](08_LABS.md) y no están integrados.

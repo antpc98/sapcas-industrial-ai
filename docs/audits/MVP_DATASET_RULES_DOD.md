@@ -1,72 +1,68 @@
-# MVP Dataset Audit & Business Rules — Closure
+# Auditoría de dataset Supply Chain y reglas de negocio MVP v1 — Cierre
 
-## Task and planning context
+## Tarea y contexto de planificación
 
-**Task:** audit the demo dataset and formalise the Inventory, Procurement and Supplier Intelligence MVP rules. **Estimated effort:** 6h. Approximately 1.5h of preceding functional analysis covered product purpose, scope, dataset strategy and initial rule selection; it is planning context, not exact engineering time.
+**Tarea:** auditar el dataset demo de Supply Chain y definir las reglas MVP de Inventory, Procurement y Supplier Intelligence. No es una auditoría completa de los datos industriales de SAPCAS. **Estimación original:** 6h. El análisis funcional previo (~1.5h) cubrió contexto, propósito, alcance y selección inicial de reglas; es contexto de planificación, no una medición exacta de ingeniería.
 
-## Work completed
+## Trabajo completado
 
-- Added the reproducible CSV audit: [`scripts/audit_demo_data.py`](../../scripts/audit_demo_data.py).
-- Audited all ten CSV datasets for business/primary-key uniqueness, nulls, relations, numeric, temporal and reconciliation controls.
-- Recorded machine-generated evidence in [MVP_DATASET_AUDIT_RESULTS.md](MVP_DATASET_AUDIT_RESULTS.md).
-- Formalised all 15 agreed MVP rules, including inputs, formulas, edge cases, configuration, action, demo evidence and limitations in [Business Rules](../04_BUSINESS_RULES.md).
+- Se añadió la auditoría reproducible [`scripts/audit_demo_data.py`](../../scripts/audit_demo_data.py).
+- Se auditaron los diez CSV para claves de negocio, duplicados, nulos, relaciones, valores numéricos, fechas y reconciliaciones.
+- Se formalizaron las 15 reglas acordadas con fuente, dato origen frente a calculado, fórmula, período, cobertura, casos límite, configuración, evidencia, acción y limitaciones.
+- Se cerraron las decisiones funcionales de INV-003, PROC-002, SUP-002 y SUP-004 sin ampliar modelos, loaders, endpoints o servicios.
+- Se delimitó el alcance a Supply Chain Intelligence v1 y se documentó la estrategia de laboratorios externos sin integrarlos.
 
-## Evidence obtained
+## Evidencias obtenidas
 
-The corpus has 704 rows across ten CSVs: 1 company, 1 plant, 3 warehouses, 35 materials, 12 suppliers, 71 supplier-material relations, 35 inventory rows, 260 PO lines, 255 goods receipts and 31 requisitions. All declared business keys are unique; all audited foreign/business relationships have zero orphan references. All inventory quantities/costs are non-negative; purchase quantity and price are positive, transport is non-negative; all 255 RECEIVED lines have actual delivery dates and 5 OPEN lines do not.
-
-Inventory availability and receipt accepted/rejected reconciliation pass using a 0.011 decimal tolerance. One inventory row has non-positive consumption: it is an expected business-rule edge case. The generated report is the source for counts and should be rerun after CSV changes.
-
-## Findings
-
-- **MEDIUM — persistence gap:** `plants`, `warehouses`, `supplier_materials`, `goods_receipts`, and `purchase_requisitions` exist in CSV but the current SQLAlchemy model and `load_demo_data.py` load only companies, materials, suppliers, inventory and purchase orders. This task deliberately does not extend the schema.
-- **MEDIUM — recommendation definition gap:** eligibility can be checked from CSV, but a common normalisation for price, delivery, quality and reliability scores is not specified. A numeric recommendation must remain partial.
-- **LOW — threshold calibration:** 60 target days, 90/180 movement days and ranking weights are demo/MVP configuration, not universal industrial defaults.
-- **INFO — source versus calculated:** supplier quality and reliability fields are source scores. Acceptance rate can be calculated from receipts, but receipts are not persisted.
-- **INFO — date reproducibility:** all rules requiring “today” are defined around an explicit `reference_date`.
-
-## Business-rule status
-
-| Rule | Status | Evidence | Remaining work |
-| --- | --- | --- | --- |
-| INV-001, INV-002, INV-004 to INV-007 | READY | Audited inventory columns and deterministic formulas | Implement runtime/UI when planned |
-| INV-003 | PARTIAL | Safety-stock rule is ready; supplier lead time exists in CSV | Persist/query supplier-material eligibility/lead time |
-| PROC-001, PROC-003, PROC-004, SUP-001, SUP-003 | READY | Audited PO/supplier fields and formal definitions | Implement runtime/UI when planned |
-| PROC-002 | PARTIAL | Formula and historical source are defined | Define current-price/minimum-history policy and alert calibration |
-| SUP-002 | PARTIAL | 255 receipts link and reconcile | Persist receipts; clarify source-score provenance |
-| SUP-004 | PARTIAL | 71 supplier-material relations; PO pairs all valid | Define common score normalisation, MOQ demand basis and certification semantics |
-
-## Decisions required to reach DONE
-
-These are **functional decisions for closing this Step**. They do not authorise implementation of models, loaders, endpoints or services in this iteration.
-
-1. **INV-003 — lead time:** decide whether `supplier_materials.lead_time_days` is used by the MVP stockout-risk condition; if yes, define selection of the eligible supplier/material relation when more than one exists. The safety-stock condition remains available independently.
-2. **PROC-002 — price variation:** define the exact `current_price` record, the minimum qualifying historical observations, and the configurable threshold at which a variation produces an alert/review.
-3. **SUP-002 — quality evidence:** choose the interim execution boundary for `goods_receipts`: direct CSV-backed calculation for the MVP demo, or a later persisted source. In both cases retain the distinction between `source_quality_score` and calculated acceptance rate.
-4. **SUP-004 — recommendation:** define comparable normalisation for price, delivery, quality and reliability; final eligibility checks; MOQ demand basis; certification compatibility semantics; and ranking/tie behaviour. The current weights remain only an initial conceptual configuration.
-
-## Subsequent work — explicitly not blocking this Step
-
-- Adding SQLAlchemy models, migrations, loaders, APIs, services, endpoints or UI for plants, warehouses, supplier-material relations, receipts or requisitions.
-- Implementing any Intelligence calculation in the runtime product after the above decisions are accepted.
-- Calibrating thresholds and weights with public industrial, pilot or customer data. This is essential before production use, but is distinct from defining the functional MVP semantics required to close this documentation/audit Step.
-- ML, forecasting, optimisation, LLM agents, C-MAPSS and Cognite work, all outside the current MVP scope.
-
-## DoD checklist
-
-| Requirement | Result |
+| Evidencia | Resultado |
 | --- | --- |
-| Dataset, relations, gaps and relevant fields audited | Complete, reproducible report |
-| Inventory, Procurement and Supplier rules defined | Complete, 15 rule definitions |
-| Inputs, formulas, edges, thresholds, interpretation, actions and demo examples | Complete in Business Rules |
-| Source versus calculated distinction | Complete |
-| Existing CSV data not loaded to PostgreSQL identified | Complete |
-| Limits, evidence maturity and external lab boundary documented | Complete |
-| Versioned documentation and audit script | Complete |
-| Rule readiness sufficient for every agreed rule | Partial: the four explicit functional decisions above are pending |
+| [Script de auditoría](../../scripts/audit_demo_data.py) | Ejecutable y cubierto por test |
+| [Resultados de auditoría](MVP_DATASET_AUDIT_RESULTS.md) | 10 CSV, 704 filas, 0 duplicados de claves, 0 referencias huérfanas |
+| Controles numéricos y temporales | 0 fallos; reconciliación dentro de tolerancia 0.011 |
+| Casos límite | 1 fila sin consumo, tratada como `NO_CONSUMPTION` |
+| Relaciones empresariales | 71 relaciones proveedor-material; 260 pares de compra válidos; 255 recepciones enlazadas |
+| Reglas y trazabilidad | [04_BUSINESS_RULES.md](../04_BUSINESS_RULES.md), 15 definiciones MVP con ejemplos demo |
+| Tests | `pytest -q`: 4 tests correctos |
 
-## Final assessment: PARTIAL
+## Hallazgos
 
-The audit and formalisation work are complete, but the requested rule set cannot all be considered READY: recommendation normalisation is intentionally unspecified, quality receipts and lead-time relations need an agreed execution boundary, and price variation needs a selection/minimum-history policy. Before calling the whole Step DONE, Antonio/ChatGPT/Codex should approve the four functional decisions above. Persisting or productising those decisions is subsequent work and does not itself block this audit/documentation Step.
+- **INFO:** el corpus CSV de Supply Chain es internamente coherente para el alcance auditado.
+- **INFO:** `valid_to` está vacío en las 71 relaciones proveedor-material y se interpreta como vigencia abierta.
+- **LOW:** los importes están redondeados a dos decimales; las reconciliaciones necesitan tolerancia 0.011, no igualdad estricta de `float`.
+- **MEDIUM:** plantas, almacenes, relaciones proveedor-material, recepciones y requisiciones existen en CSV, pero todavía no se persisten en PostgreSQL. Es una limitación de implementación, no de definición funcional del MVP.
+- **INFO:** los scores de calidad y fiabilidad del maestro son datos fuente; la tasa de aceptación es una métrica SAPCAS calculada y ambas se mantienen separadas.
 
-**Estimated remaining effort:** 1–2h for the four decisions and closure review. Persistence and product implementation should be estimated separately because they are subsequent scope.
+## Decisiones funcionales cerradas
+
+| Regla | Decisión cerrada |
+| --- | --- |
+| INV-003 | Usa plazo del proveedor preferente elegible único; si no existe, mínimo plazo elegible, con base de selección explicable. Sin plazo, aplica la condición de safety stock y declara `NOT_AVAILABLE`. |
+| PROC-002 | `current_price` es la última compra RECEIVED; histórico son compras RECEIVED anteriores dentro de ventana configurable, con mínimo de 3 observaciones. +10 % es alerta demo `MEDIUM` configurable. |
+| SUP-002 | El MVP demo calcula aceptación directamente desde `goods_receipts.csv`, con ventana configurable, cobertura visible y estados `NOT_CALCULABLE`/`INSUFFICIENT_DATA`. |
+| SUP-004 | Elegibilidad, escalas iniciales comparables, requisitos de cobertura, manejo de faltantes y empate están definidos; ranking solo entre elegibles y siempre explicable. |
+
+## Trabajo futuro de implementación — no bloquea este Step
+
+- Modelos SQLAlchemy, migraciones, loaders y persistencia de plantas, almacenes, relaciones proveedor-material, recepciones y requisiciones.
+- Servicios, endpoints, interfaz y ejecución productiva de las reglas.
+- Calibración de umbrales/pesos con piloto y datos de cliente; no es condición para que la semántica MVP quede definida.
+- ML, forecasting, optimización, agentes LLM, C-MAPSS, Cognite y los demás laboratorios.
+
+## Checklist DoD
+
+| Requisito | Estado |
+| --- | --- |
+| Dataset Supply Chain auditado y reproducible | Completo |
+| Relaciones, gaps y campos relevantes identificados | Completo |
+| Reglas Inventory, Procurement y Supplier definidas | Completo |
+| Fórmulas, inputs, periodos, edge cases y configuración trazables | Completo |
+| Fuente frente a dato calculado distinguido | Completo |
+| Recomendación explicable y sin puntuaciones inventadas | Completo |
+| Scope Supply Chain v1 y laboratorios externos diferenciados | Completo |
+| Documentación versionada y tests | Completo |
+
+## Evaluación final: DONE
+
+**DONE significa que el dataset Supply Chain v1 está auditado y las reglas MVP están funcionalmente definidas.** No significa que el producto esté implementado, que los umbrales estén calibrados industrialmente, ni que los demás dominios de SAPCAS estén auditados.
+
+No quedan decisiones funcionales bloqueantes para este Step. **Esfuerzo restante para el Step: 0h.** Las tareas de implementación y calibración se estimarán en Steps posteriores.

@@ -10,7 +10,7 @@ El usuario inicial es el equipo de compras, aprovisionamiento o inventario. No e
 Datos operativos → normalización → KPIs y reglas → riesgos/oportunidades → recomendaciones
 ```
 
-Los bloques de producto son Datos, Inventory Intelligence, Procurement Intelligence, Supplier Intelligence y Recommendations/RFQ. RFQ (*request for quotation*) es una solicitud de oferta a proveedores.
+El dominio en construcción es **Supply Chain Intelligence v1**: Inventory Intelligence, Procurement Intelligence, Supplier Intelligence y posteriormente RFQ. RFQ (*request for quotation*) es una solicitud de oferta a proveedores. SAPCAS Industrial AI evolucionará después con dominios de mantenimiento, producción, operaciones, calidad/scrap, coste/pérdidas y decisión transversal; no forman parte de esta auditoría.
 
 ## Estado
 
@@ -22,7 +22,7 @@ Los bloques de producto son Datos, Inventory Intelligence, Procurement Intellige
 
 ### IN PROGRESS
 
-- Formalizar reglas del MVP de Industrial Intelligence. No existen aún servicios ni endpoints que las calculen.
+- Las reglas MVP de Supply Chain v1 están definidas y auditadas; no existen aún servicios ni endpoints que las calculen.
 
 ### PLANNED
 
@@ -33,4 +33,4 @@ Los bloques de producto son Datos, Inventory Intelligence, Procurement Intellige
 
 ## Límites y siguiente objetivo
 
-No se pretende construir un ERP, mantenimiento, planificación de producción, visión artificial, trading, integraciones específicas sin cliente ni infraestructura distribuida. El siguiente objetivo es definir métricas, fórmulas, fuentes y criterios de aceptación antes de implementar Intelligence.
+No se pretende construir un ERP, mantenimiento, planificación de producción, visión artificial, trading, integraciones específicas sin cliente ni infraestructura distribuida. El siguiente objetivo es implementar de forma incremental las reglas Supply Chain v1 ya definidas, manteniendo su trazabilidad a datos origen.

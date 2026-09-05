@@ -33,3 +33,21 @@ Solo se registran decisiones respaldadas por código o documentación. Fechas no
 **Decisión:** Pandas, validación de columnas y upsert SQLAlchemy.  
 **Motivo:** `scripts/load_demo_data.py`.  
 **Consecuencias:** solo cinco CSV llegan hoy a PostgreSQL.
+
+## ADR-005 — Reglas Supply Chain v1 explicables y trazables
+
+**Fecha:** 2026-09-05
+
+**Contexto:** cerrar la definición funcional sin adelantar implementación.
+
+**Decisión:** cada regla declara datos fuente, dato calculado, fórmula, periodo, cobertura, casos límite, configuración, evidencia y acción. Los faltantes se expresan como `NOT_AVAILABLE`, `INSUFFICIENT_DATA` o `NOT_CALCULABLE`; no se inventan puntuaciones.
+**Consecuencias:** las reglas quedan funcionalmente definidas; servicios, persistencia y UI son trabajo posterior.
+
+## ADR-006 — Supply Chain v1 y laboratorios externos separados
+
+**Fecha:** 2026-09-05
+
+**Contexto:** evitar presentar el MVP como todo SAPCAS Industrial AI.
+
+**Decisión:** el dataset demo se reserva para Supply Chain; NASA C-MAPSS y Cognite se documentan como LAB01/LAB02 futuros, sin integración.
+**Consecuencias:** no se amplía el modelo, infraestructura ni alcance del MVP por datasets externos.
